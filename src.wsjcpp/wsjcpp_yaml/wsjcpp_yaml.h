@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2024 wsjcpp
+Copyright (c) 2019-2025 wsjcpp
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -87,9 +87,9 @@ class IWsjcppYamlLog {
 
 // ---------------------------------------------------------------------
 /*!
-	\brief Class for keep data of yaml node
+    \brief Class for keep data of yaml node
 
-	Basic class for yaml tree
+    Basic class for yaml tree
 */
 
 class WsjcppYamlNode {
@@ -151,12 +151,12 @@ class WsjcppYamlNode {
         bool removeElement(int i);
 
         bool isValue();
-        
+
         std::string getValue(); // contains only strings
 
         void setValue(const std::string &sValue, WsjcppYamlQuotes nQuotes = WSJCPP_YAML_QUOTES_NONE);
         WsjcppYamlQuotes getValueQuotes();
-        
+
         std::string getSerializedName();
         std::string toString(std::string sIndent = "");
         std::string getNodeTypeAsString();
@@ -215,7 +215,8 @@ class WsjcppYamlParsebleLine {
         bool parseLine(const std::string &sLine, std::string &sError);
 
     private:
-        
+        void initInstance(int nLine);
+
         std::string TAG;
         int m_nLineNumber;
 
@@ -244,13 +245,13 @@ class WsjcppYamlCursor {
 
         // null or undefined
         bool isNull() const;
-        
+
         // isUndefined
         bool isUndefined() const;
 
         // value
         bool isValue() const;
-        
+
         // array
         bool isArray() const;
         size_t size() const;
@@ -268,19 +269,23 @@ class WsjcppYamlCursor {
         // WsjcppYamlCursor &set(const std::string &sName, bool bValue);
         // WsjcppYamlCursor &remove(const std::string &sKey);
 
-        // comment 
+        // comment
         std::string comment();
         WsjcppYamlCursor &comment(const std::string& sComment);
-        
+
         // val
         std::string valStr() const;
         WsjcppYamlCursor &val(const std::string &sValue);
         WsjcppYamlCursor &val(const char *sValue);
         int valInt() const;
         WsjcppYamlCursor &val(int nValue);
+        float valFloat() const;
+        WsjcppYamlCursor &val(float nValue);
+        double valDouble() const;
+        WsjcppYamlCursor &val(double nValue);
         bool valBool() const;
         WsjcppYamlCursor &val(bool bValue);
-       
+
         // node
         WsjcppYamlNode *node();
 
@@ -300,6 +305,8 @@ class WsjcppYamlCursor {
         WsjcppYamlCursor& operator=(const bool &bVal);
 
     private:
+        void initInstance(WsjcppYamlNode *pCurrentNode);
+
         std::string TAG;
         WsjcppYamlNode *m_pCurrentNode;
 };
@@ -329,10 +336,17 @@ class WsjcppYaml : public IWsjcppYamlLog {
         static std::string toLower(const std::string &str);
 
         // IWsjcppYamlLog
+        #if defined(__CODEGEARC__) && !defined(_WIN64)
+        virtual void err(const std::string &TAG, const std::string &sMessage);
+        virtual void throw_err(const std::string &TAG, const std::string &sMessage);
+        virtual void warn(const std::string &TAG, const std::string &sMessage);
+        virtual void info(const std::string &TAG, const std::string &sMessage);
+        #else
         virtual void err(const std::string &TAG, const std::string &sMessage) override;
         virtual void throw_err(const std::string &TAG, const std::string &sMessage) override;
         virtual void warn(const std::string &TAG, const std::string &sMessage) override;
         virtual void info(const std::string &TAG, const std::string &sMessage) override;
+        #endif
 
     private:
         std::string TAG;
