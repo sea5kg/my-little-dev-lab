@@ -28,6 +28,7 @@
 #include <string>
 #include <json.hpp>
 #include "HttpService.h"
+#include <employ_config.h>
 
 class WebServer {
     public:
@@ -48,13 +49,13 @@ class WebServer {
         int m_nTeamLogoPrefixLength;
         hv::HttpService *m_pHttpService;
 
-        // EmployConfig *m_pConfig;
+        EmployConfig *m_pConfig;
         // EmployFlags *m_pEmployFlags;
         // EmployDatabase *m_pEmployDatabase;
         // EmployTeamLogos *m_pTeamLogos;
 
         std::string m_sIndexHtml;
-        std::string m_sScoreboardHtmlFolder;
+        std::string m_sHtmlFolder;
 
         nlohmann::json m_jsonGame;
         std::string m_sCacheResponseGameJson;

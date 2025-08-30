@@ -25,6 +25,8 @@
 
 #include <wsjcpp_core.h>
 #include <employ_config.h>
+#include "web_server.h"
+#include "WebSocketServer.h"  // libhv
 
 int main(int argc, const char* argv[]) {
     std::string TAG = "MAIN";
@@ -62,6 +64,15 @@ int main(int argc, const char* argv[]) {
             break;
         }
     }
+
+    WsjcppLog::ok(TAG, "Starting scoreboard on http://localhost:" + std::to_string(pConfig->getPort()) + "/");
+
+    WebServer httpServer;
+    hv::HttpService *pRouter = httpServer.getService();
+    hv::HttpServer server(pRouter);
+    server.setPort(pConfig->getPort());
+    server.setThreadNum(4);
+    server.run();
 
     // // websocket_server_t server;
     // // server.service = pRouter;

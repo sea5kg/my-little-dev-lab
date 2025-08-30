@@ -50,6 +50,13 @@ list (APPEND WSJCPP_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/./src.wsjcpp/wsjcpp_argume
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/./src.wsjcpp/wsjcpp_arguments/wsjcpp_arguments.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/./src.wsjcpp/wsjcpp_arguments/wsjcpp_arguments.h")
 
+# resources.wsjcpp
+list (APPEND WSJCPP_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src-resources.wsjcpp/")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src-resources.wsjcpp/__data_html_index_html_path92beac.h")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src-resources.wsjcpp/__data_html_index_html_path92beac.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src-resources.wsjcpp/__data_html_admin_index_html_path1c7bf8.h")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src-resources.wsjcpp/__data_html_admin_index_html_path1c7bf8.cpp")
+
 # required-libraries
 list (APPEND WSJCPP_LIBRARIES "-lpthread")
 list (APPEND WSJCPP_LIBRARIES "-lpthread")

@@ -3,6 +3,7 @@
 /.vscode
 /.logs
 /cpp-basic-web-server
+/libhv.*.log
 
 # Prerequisites
 *.d

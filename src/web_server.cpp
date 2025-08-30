@@ -33,16 +33,17 @@
 #include <regex>
 #include <wsjcpp_core.h>
 
+
 using namespace hv;
 
 
 WebServer::WebServer() {
     TAG = "WebServer";
-    // m_pConfig = findWsjcppEmploy<EmployConfig>();
+    m_pConfig = findWsjcppEmploy<EmployConfig>();
     // m_pEmployFlags = findWsjcppEmploy<EmployFlags>();
     // m_pEmployDatabase = findWsjcppEmploy<EmployDatabase>();
     // m_pTeamLogos = findWsjcppEmploy<EmployTeamLogos>();
-    // m_sScoreboardHtmlFolder = m_pConfig->scoreboardHtmlFolder();
+    m_sHtmlFolder = m_pConfig->getHtmlFolder();
 
     // {
     //     logger_t* pLogger = hv_default_logger();
@@ -177,14 +178,19 @@ int WebServer::httpWebFolder(HttpRequest* req, HttpResponse* resp) {
         sRequestPath = "/index.html";
     }
 
+    if (sRequestPath == "/admin" || sRequestPath == "/admin/") {
+        sRequestPath = "/index.html";
+    }
+
     // TODO
     WsjcppLog::info(TAG, "Request path: " + sRequestPath);
-    std::string sFilePath = sRequestPath = WsjcppCore::doNormalizePath(m_sScoreboardHtmlFolder + "/" + sRequestPath);
+    std::string sFilePath = sRequestPath = WsjcppCore::doNormalizePath(m_sHtmlFolder + "/" + sRequestPath);
     if (WsjcppCore::fileExists(sFilePath)) { // TODO check the file exists not dir
         return resp->File(sFilePath.c_str());
     }
-
-    std::string sResPath = "./data_sample/html" + sRequestPath;
+    // cache
+    WsjcppLog::info(TAG, "File from cache: " + sRequestPath);
+    std::string sResPath = "./data/html" + sRequestPath;
     if (WsjcppResourcesManager::has(sResPath)) {
         WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
         resp->Data(

@@ -51,3 +51,15 @@ dependencies:
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/wsjcpp_arguments"
 
+resources:
+  - filepath: "./data/html/index.html"
+    filesize: 57
+    pack-as: "binary"
+    modified: 1753766028
+    sha1: "d6d85ef41e79e9073554dad11d1c0b13b61d4ad1"
+  - filepath: "./data/html/admin/index.html"
+    filesize: 50
+    pack-as: "binary"
+    modified: 1756568798
+    sha1: "2d7ccf5b7e617474286297b9df2c270e718f7db1"
+

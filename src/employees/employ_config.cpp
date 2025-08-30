@@ -77,10 +77,15 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
     m_sHtmlFolder = sHtmlFolder;
     WsjcppLog::info(TAG, "Html Folder: " + m_sHtmlFolder);
 
+    m_nPort = yaml["port"].valInt();
 }
 
-const std::string &EmployConfig::getHtmlFolder() {
+const std::string &EmployConfig::getHtmlFolder() const {
     return m_sHtmlFolder;
+}
+
+int EmployConfig::getPort() const {
+    return m_nPort;
 }
 
 // void EmployMyImpl::doSomething() {
