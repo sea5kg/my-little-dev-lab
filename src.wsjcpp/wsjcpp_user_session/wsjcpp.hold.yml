@@ -1,0 +1,28 @@
+name: "wsjcpp-user-session"
+version: v1.0.0
+cmake_minimum_required: "3.0"
+cmake_cxx_standard: "17"
+description: "User Session"
+authors:
+  - name: "Evgenii Sopov"
+    email: "mrseakg@gmail.com"
+origins:
+  - address: "https://sea5kg.ru/wsjcpp-package-registry/"
+    type: "package-registry"
+keywords:
+  - "c++"
+dependencies:
+  - name: "wsjcpp-core"
+    version: "v0.2.3"
+    url: "https://github.com/wsjcpp/wsjcpp-core:master"
+    origin: "https://github.com/"
+    installation-dir: "./src.wsjcpp/wsjcpp_core"
+    installation-datetime: "Mon, 15 Dec 2025 15:08:39 GMT"
+
+  - name: "nlohmann/json"
+    version: "v3.12.0"
+    url: "https://github.com/wsjcpp/nlohmann_json:wsjcpp-copy-version"
+    origin: "https://github.com/"
+    installation-dir: "./src.wsjcpp/nlohmann_json"
+    installation-datetime: "Mon, 15 Dec 2025 15:22:25 GMT"
+

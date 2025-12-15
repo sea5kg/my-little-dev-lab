@@ -51,6 +51,12 @@ dependencies:
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/wsjcpp_arguments"
 
+  - name: "wsjcpp-user-session"
+    version: "v1.0.0"
+    url: "https://github.com/wsjcpp/wsjcpp-user-session:main"
+    origin: "https://github.com/"
+    installation-dir: "./src.wsjcpp/wsjcpp_user_session"
+    installation-datetime: "Mon, 15 Dec 2025 15:57:58 GMT"
 resources:
   - filepath: "./data/html/index.html"
     filesize: 57
