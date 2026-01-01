@@ -1,8 +1,8 @@
-wsjcpp_version: v0.0.1
+wsjcpp_version: v0.2.4
 cmake_minimum_required: 3.0
-cmake_cxx_standard: 17
+cmake_cxx_standard: 11
 name: wsjcpp-yaml
-version: v0.1.8
+version: v0.1.10
 description: Read/Write yaml files
 issues: https://github.com/wsjcpp/wsjcpp-yaml/issues
 
@@ -20,60 +20,14 @@ authors:
   - name: Evgenii Sopov
     email: mrseakg@gmail.com
 
-dependencies:
-  - name: "wsjcpp-core"
-    version: "v0.2.1"
-    url: "https://github.com/wsjcpp/wsjcpp-core:master"
-    origin: "https://github.com/"
-    installation-dir: "./src.wsjcpp/wsjcpp_core"
-    installation-datetime: "Wed, 12 Jan 2022 14:25:07 GMT"
-
 distribution:
   - source-file: src/wsjcpp_yaml.cpp
     target-file: wsjcpp_yaml.cpp
     type: "source-code"
-    sha1: "75c07f509d386864ec5466fe9fb5ecccc879b526"
+    sha1: "b729764f29f3b291fc0b98e32961f0bfe68383ea"
   - source-file: src/wsjcpp_yaml.h
     target-file: wsjcpp_yaml.h
     type: "source-code"
 
-    sha1: "b32fb8314ca9975c81c9b27bcede8925a1728c61"
-unit-tests:
-  cases:
-    - name: LineParser
-      description: Test Parse YAML Line
-    - name: YamlParserSimpleArray
-      description: Test Parse Array
-    - name: YamlParserSimpleMap
-      description: Test Parse Map
-    - name: YamlParserHierarchicalMap
-      description: Test Hierarchical Map
-    - name: YamlParserQuotes
-      description: YamlParserQuotes
-    - name: YamlParserAll
-      description: YamlParserAll
-    - name: YamlParserArrayIncludedMap
-      description: YamlParserArrayIncludedMap
-    - name: "RemoveElementForMap"
-      description: ""
-    - name: "RemoveElementInArray"
-      description: ""
-    - name: "MemoryLeaks"
-      description: ""
-    - name: "ReadYaml"
-      description: ""
-    - name: "ReadWriteFile"
-      description: ""
-    - name: "Cursor"
-      description: ""
-    - name: "TagNames"
-      description: ""
-    - name: "Cleanup"
-      description: ""
-    - name: "AppendElements"
-      description: ""
-    - name: "ReadWsjcppHoldYml"
-      description: ""
-    - name: "KeepFormat"
-      description: ""
+    sha1: "566de8251d67e46aad480809d06320c562a09ef5"
 
