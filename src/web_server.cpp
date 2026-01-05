@@ -32,6 +32,7 @@
 #include "hlog.h"
 #include <regex>
 #include <wsjcpp_core.h>
+#include <wsjcpp_jsonrpc20.h>
 
 
 using namespace hv;
@@ -56,73 +57,24 @@ WebServer::WebServer() {
     //     logger_set_file(pLogger, sLogFilePath.c_str());
     // }
 
-    m_sApiPathPrefix = "/api/v1/";
-    m_sTeamLogoPrefix = "/team-logo/";
-    m_nTeamLogoPrefixLength = m_sTeamLogoPrefix.size();
-
-    // m_jsonGame["game_name"] = m_pConfig->gameName();
-    // m_jsonGame["game_start"] = WsjcppCore::formatTimeUTC(m_pConfig->gameStartUTCInSec()) + " (UTC)";
-    // m_jsonGame["game_end"] = WsjcppCore::formatTimeUTC(m_pConfig->gameEndUTCInSec()) + " (UTC)";
-    // m_jsonGame["game_has_coffee_break"] = m_pConfig->gameHasCoffeeBreak();
-    // m_jsonGame["game_coffee_break_start"] = WsjcppCore::formatTimeUTC(m_pConfig->gameCoffeeBreakStartUTCInSec()) + " (UTC)";
-    // m_jsonGame["game_coffee_break_end"] = WsjcppCore::formatTimeUTC(m_pConfig->gameCoffeeBreakEndUTCInSec()) + " (UTC)";
-    m_jsonGame["teams"] = nlohmann::json::array();
-    m_jsonGame["services"] = nlohmann::json::array();
-
-    // for (unsigned int i = 0; i < m_pConfig->servicesConf().size(); i++) {
-    //     Ctf01dServiceDef serviceConf = m_pConfig->servicesConf()[i];
-    //     if (serviceConf.isEnabled()) {
-    //         nlohmann::json serviceInfo;
-    //         serviceInfo["id"] = serviceConf.id();
-    //         serviceInfo["name"] = serviceConf.name();
-    //         serviceInfo["round_time_in_sec"] = serviceConf.timeSleepBetweenRunScriptsInSec();
-    //         m_jsonGame["services"].push_back(serviceInfo);
-    //     }
-    // }
-
-    // for (unsigned int i = 0; i < m_pConfig->teamsConf().size(); i++) {
-    //     Ctf01dTeamDef teamConf = m_pConfig->teamsConf()[i];
-    //     nlohmann::json teamInfo;
-    //     teamInfo["id"] = teamConf.getId();
-    //     teamInfo["name"] = teamConf.getName();
-    //     teamInfo["ip_address"] = teamConf.ipAddress();
-    //     teamInfo["logo"] = "./team-logo/" + teamConf.getId();
-    //     teamInfo["logo_last_write_time"] = teamConf.getLogoLastWriteTime();
-// 
-    //     m_jsonGame["teams"].push_back(teamInfo);
-    //     m_jsonTeams["teams"].push_back(teamInfo);
-    // }
-
-    m_sCacheResponseGameJson = m_jsonGame.dump();
-    m_sCacheResponseTeamsJson = m_jsonTeams.dump();
-    // m_sCacheResponseServicesJson =
-
     m_pHttpService = new HttpService();
 
     // static files
     m_pHttpService->document_root = "./html";
 
-    // m_pHttpService->GET("/api/", std::bind(&WebServer::httpApiV1GetPaths, this, std::placeholders::_1, std::placeholders::_2));
-    // m_pHttpService->GET("/api/v1/", std::bind(&WebServer::httpApiV1GetPaths, this, std::placeholders::_1, std::placeholders::_2));
-
-    m_pHttpService->GET("*", std::bind(&WebServer::httpWebFolder, this, std::placeholders::_1, std::placeholders::_2));
-    // m_pHttpService->GET("/admin*", std::bind(&WebServer::httpAdmin, this, std::placeholders::_1, std::placeholders::_2));
+    m_pHttpService->GET("*", std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
+    m_pHttpService->POST("*", std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 hv::HttpService *WebServer::getService() {
     return m_pHttpService;
 }
 
-int WebServer::httpApiV1GetPaths(HttpRequest* req, HttpResponse* resp) {
-    return resp->Json(m_pHttpService->Paths());
-}
+// int WebServer::httpApiV1GetPaths(HttpRequest* req, HttpResponse* resp) {
+//     return resp->Json(m_pHttpService->Paths());
+// }
 
-int WebServer::httpAdmin(HttpRequest* req, HttpResponse* resp) {
-    std::string str = req->path + " match /admin*";
-    return resp->String(str);
-}
-
-int WebServer::httpWebFolder(HttpRequest* req, HttpResponse* resp) {
+int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
     std::string sOriginalRequestPath = req->path;
     std::string sRequestPath;
 
@@ -136,42 +88,9 @@ int WebServer::httpWebFolder(HttpRequest* req, HttpResponse* resp) {
     sRequestPath = WsjcppCore::doNormalizePath(sRequestPath);
 
     // WsjcppLog::info(TAG, "sRequestPath = " + sRequestPath);
-    if (sRequestPath == "/flag") {
-        return this->httpApiV1Flag(req, resp);
-    }
-
-    // if (sRequestPath.rfind(m_sTeamLogoPrefix, 0) == 0) {
-    //     std::string sTeamId = sRequestPath.substr(m_nTeamLogoPrefixLength, sRequestPath.length() - m_nTeamLogoPrefixLength);
-    //     Ctf01dTeamLogo *pLogo = m_pTeamLogos->findTeamLogo(sTeamId);
-    //     if (pLogo == nullptr) {
-    //         return 404;
-    //     }
-    //     resp->Data(
-    //         pLogo->pBuffer,
-    //         pLogo->nBufferSize,
-    //         true // nocopy
-    //     );
-    //     resp->SetContentTypeByFilename(pLogo->sFilename.c_str());
-    //     return 200;
-    // }
-
-    if (sRequestPath.rfind(m_sApiPathPrefix, 0) == 0) {
-        if (sRequestPath == "/api/v1/game") {
-            return this->httpApiV1Game(req, resp);
-        } else if (sRequestPath == "/api/v1/scoreboard") {
-            return this->httpApiV1Scoreboard(req, resp);
-        } else if (sRequestPath == "/api/v1/myip") {
-            return this->httpApiV1MyIp(req, resp);
-        } else if (sRequestPath == "/api/v1/teams") {
-            resp->Data(
-                (void *)(m_sCacheResponseTeamsJson.c_str()),
-                m_sCacheResponseTeamsJson.length(),
-                true // nocopy
-            );
-            resp->SetContentTypeByFilename("teams.json");
-            return 200;
-        }
-        return this->httpApiV1GetPaths(req, resp);
+    if (sRequestPath == "/api" || sRequestPath == "/api/") {
+        std::cout << "CALLED API" << std::endl;
+        return this->httpApi(req, resp);
     }
 
     if (sRequestPath == "/") {
@@ -204,159 +123,49 @@ int WebServer::httpWebFolder(HttpRequest* req, HttpResponse* resp) {
     return 404; // Not found
 }
 
-// int WebServer::admin(const std::string &sWorkerId, WsjcppLightWebHttpRequest *pRequest){
-//     std::string _tag = TAG + "-" + sWorkerId;
-//     std::string sRequestPath = pRequest->getRequestPath();
-//     sRequestPath = WsjcppCore::doNormalizePath(sRequestPath);
+int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
+    auto now = std::chrono::system_clock::now().time_since_epoch();
+    int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
 
-//     WsjcppLightWebHttpResponse response(pRequest->getSockFd());
+    if (req->method != HTTP_POST) {
+        return 403;
+    }
 
-//     // Log::warn(_tag, pRequest->requestPath());
+    nlohmann::json req_json_body;
+    try {
+      req_json_body = nlohmann::json::parse(req->body);
+    } catch (nlohmann::json::parse_error& error){
+      std::cerr << "Parse error at byte: " << error.byte << std::endl;
+      return 400;
+    }
 
-//     if (sRequestPath == "/") {
-//         sRequestPath = "/index.html";
-//     }
+    if (!req_json_body.is_object()) {
+        return 400;
+    }
 
-//     std::string sFilePath = m_sWebFolder + sRequestPath;
+    if (!req_json_body["method"].is_string()) {
+        std::cerr << "Not found field method " << std::endl;
+        return 400;
+    }
 
+    std::string sMethod = req_json_body["method"];
 
+    auto *pHandler = WsjcppJsonRpc20::findJsonRpc20Handler(sMethod);
 
-//     // Log::warn(_tag, "Response File " + sFilePath);
-//     response.cacheSec(60).ok().sendFile(sFilePath);
-//     return true;
-// }
+    if (!pHandler) {
+        return 400;
+    }
 
+    // WsjcppJsonRpc20 {
+    // public:
+    //     static void initGlobalVariables();
+    //     static void addHandler(const std::string &sMethodName, WsjcppJsonRpc20HandlerBase* pHandler);
+    //     static WsjcppJsonRpc20HandlerBase *findJsonRpc20Handler(const std::string &sMethodName);
 
-int WebServer::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
-    // auto now = std::chrono::system_clock::now().time_since_epoch();
-    // int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
+    std::cout << req->body << ", req_json_body.dump(): " << req_json_body.dump() << ", sMethod: " << sMethod << std::endl;
+
     // std::string sRequestIP = req->client_addr.ip;
     // std::string sRequestIP_MsgSuffex = " (" + sRequestIP + ")";
-
-    // if (nCurrentTimeSec < m_pConfig->gameStartUTCInSec()) {
-    //     const std::string sErrorMsg = " Error(-8): Game not started yet";
-    //     WsjcppLog::err(TAG, sErrorMsg + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 400;
-    // }
-
-    // if (m_pConfig->gameHasCoffeeBreak()
-    //     && nCurrentTimeSec > m_pConfig->gameCoffeeBreakStartUTCInSec()
-    //     && nCurrentTimeSec < m_pConfig->gameCoffeeBreakEndUTCInSec()
-    // ) {
-    //     static const std::string sErrorMsg = "Error(-8): Game on coffeebreak now";
-    //     WsjcppLog::err(TAG, sErrorMsg + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 400;
-    // }
-
-    // if (nCurrentTimeSec > m_pConfig->gameEndUTCInSec()) {
-    //     static const std::string sErrorMsg = "Error(-9): Game already ended";
-    //     WsjcppLog::err(TAG, sErrorMsg + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 400;
-    // }
-
-    // std::string sTeamId = req->GetParam("teamid");
-    // sTeamId = WsjcppCore::trim(sTeamId);
-    // sTeamId = WsjcppCore::toLower(sTeamId);
-    // std::string sFlag = req->GetParam("flag");
-    // sFlag = WsjcppCore::trim(sFlag);
-    // sFlag = WsjcppCore::toLower(sFlag);
-
-    // if (sTeamId == "") {
-    //     static const std::string sErrorMsg = "Error(-10): Not found get-parameter 'teamid' or parameter is empty";
-    //     WsjcppLog::err(TAG, sErrorMsg + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 400;
-    // }
-
-    // if (sFlag == "") {
-    //     static const std::string sErrorMsg = "Error(-11): Not found get-parameter 'flag' or parameter is empty";
-    //     WsjcppLog::err(TAG, sErrorMsg + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 400;
-    // }
-
-    // // TODO optimize
-    // bool bTeamFound = false;
-    // for (unsigned int iteam = 0; iteam < m_pConfig->teamsConf().size(); iteam++) {
-    //     Ctf01dTeamDef teamConf = m_pConfig->teamsConf()[iteam];
-    //     if (teamConf.getId() == sTeamId) {
-    //         bTeamFound = true;
-    //     }
-    // }
-
-    // if (!bTeamFound) {
-    //     static const std::string sErrorMsg = "Error(-130): this is team not found";
-    //     WsjcppLog::err(TAG, sErrorMsg + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 400;
-    // }
-
-    // // TODO test speed of regexp and if will be simple compare every symbol.
-    // const static std::regex reFlagFormat("c01d[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}[0-9]{8,8}");
-    // if (!std::regex_match(sFlag, reFlagFormat)) {
-    //     static const std::string sErrorMsg = "Error(-140): flag has wrong format";
-    //     WsjcppLog::err(TAG, sErrorMsg + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 400;
-    // }
-    // m_pConfig->scoreboard()->incrementTries(sTeamId);
-
-    // m_pEmployDatabase->insertFlagAttempt(sTeamId, sFlag, sRequestIP);
-
-    // // TODO m_pEmployFlags->insertFlagAttempt(sTeamId, sFlag);
-
-    // Ctf01dFlag flag;
-    // if (!m_pConfig->scoreboard()->findFlagLive(sFlag, flag)) {
-    //     static const std::string sErrorMsg = "Error(-150): flag is too old or flag never existed or flag alredy stole.";
-    //     WsjcppLog::err(TAG, sErrorMsg + ". Recieved flag {" + sFlag + "} from {" + sTeamId + "}" + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 403;
-    // }
-
-    // long nCurrentTimeMSec = (long)nCurrentTimeSec;
-    // nCurrentTimeMSec = nCurrentTimeMSec*1000;
-
-    // if (flag.getTimeEndInMs() < nCurrentTimeMSec) {
-    //     // TODO
-    //     static const std::string sErrorMsg = "Error(-151): flag is too old";
-    //     WsjcppLog::err(TAG, sErrorMsg + ". Recieved flag {" + sFlag + "} from {" + sTeamId + "}" + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 403;
-    // }
-
-    // // if (flag.teamStole() == sTeamId) {
-    // //     response.forbidden().sendText("Error(-160): flag already stole by your team");
-    // //     WsjcppLog::err(TAG, "Error(-160): Recieved flag {" + sFlag + "} from {" + sTeamId + "} (flag already stole by your team)");
-    // //     return true;
-    // // }
-
-    // if (flag.getTeamId() == sTeamId) {
-    //     static const std::string sErrorMsg = "Error(-180): this is your flag";
-    //     WsjcppLog::err(TAG, sErrorMsg + ". Recieved flag {" + sFlag + "} from {" + sTeamId + "}" + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 403;
-    // }
-
-    // std::string sServiceStatus = m_pConfig->scoreboard()->serviceStatus(sTeamId, flag.getServiceId());
-
-    // // std::cout << "sServiceStatus: " << sServiceStatus << "\n";
-
-    // if (sServiceStatus != ServiceStatusCell::SERVICE_UP) {
-    //     static const std::string sErrorMsg = "Error(-190): Your same service is dead. Try later.";
-    //     WsjcppLog::err(TAG, sErrorMsg + ". Recieved flag {" + sFlag + "} from {" + sTeamId + "}" + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 403;
-    // }
-
-    // if (m_pEmployDatabase->isAlreadyStole(flag, sTeamId)) {
-    //     static const std::string sErrorMsg = "Error(-170): flag already stoled by your";
-    //     WsjcppLog::err(TAG, sErrorMsg + ". Recieved flag {" + sFlag + "} from {" + sTeamId + "}" + sRequestIP_MsgSuffex);
-    //     resp->String(sErrorMsg);
-    //     return 403;
-    // }
 
     // // TODO light update scoreboard
     // int nPoints = m_pConfig->scoreboard()->incrementAttackScore(flag, sTeamId);
@@ -370,35 +179,36 @@ int WebServer::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
     //     false // copy buffer
     // );
     resp->content_type = TEXT_PLAIN;
-    return 200;
-}
-
-int WebServer::httpApiV1Scoreboard(HttpRequest* req, HttpResponse* resp) {
-    // m_pTeamLogos->updateLastWriteTime();
-    // nlohmann::json jsonScoreboard = m_pConfig->scoreboard()->toJson();
-    // m_pTeamLogos->updateScorebordJson(jsonScoreboard);
-    // std::string sScoreboardJson = jsonScoreboard.dump();
-    // resp->Data(
-    //     (void *)(sScoreboardJson.c_str()),
-    //     sScoreboardJson.length(),
-    //     false // nocopy - force copy
-    // );
     // resp->SetContentTypeByFilename("scoreboard.json");
     return 200;
 }
 
-int WebServer::httpApiV1Game(HttpRequest* req, HttpResponse* resp) {
-    // std::cout << m_sCacheResponseGameJson << std::endl;
-    resp->Data(
-        (void *)(m_sCacheResponseGameJson.c_str()),
-        m_sCacheResponseGameJson.length(),
-        true // nocopy
-    );
-    resp->SetContentTypeByFilename("game.json");
-    return 200;
-}
+// int WebServer::httpApiV1Scoreboard(HttpRequest* req, HttpResponse* resp) {
+//     // m_pTeamLogos->updateLastWriteTime();
+//     // nlohmann::json jsonScoreboard = m_pConfig->scoreboard()->toJson();
+//     // m_pTeamLogos->updateScorebordJson(jsonScoreboard);
+//     // std::string sScoreboardJson = jsonScoreboard.dump();
+//     // resp->Data(
+//     //     (void *)(sScoreboardJson.c_str()),
+//     //     sScoreboardJson.length(),
+//     //     false // nocopy - force copy
+//     // );
+//     // resp->SetContentTypeByFilename("scoreboard.json");
+//     return 200;
+// }
 
-int WebServer::httpApiV1MyIp(HttpRequest* req, HttpResponse* resp) {
-    resp->json["myip"] = req->client_addr.ip;
-    return 200;
-}
+// int WebServer::httpApiV1Game(HttpRequest* req, HttpResponse* resp) {
+//     // std::cout << m_sCacheResponseGameJson << std::endl;
+//     resp->Data(
+//         (void *)(m_sCacheResponseGameJson.c_str()),
+//         m_sCacheResponseGameJson.length(),
+//         true // nocopy
+//     );
+//     resp->SetContentTypeByFilename("game.json");
+//     return 200;
+// }
+
+// int WebServer::httpApiV1MyIp(HttpRequest* req, HttpResponse* resp) {
+//     resp->json["myip"] = req->client_addr.ip;
+//     return 200;
+// }
