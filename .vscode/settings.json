@@ -3,6 +3,7 @@
         "EVPP",
         "libhv",
         "lpthread",
+        "MLDL",
         "MQTT",
         "THREADSAFE"
     ]

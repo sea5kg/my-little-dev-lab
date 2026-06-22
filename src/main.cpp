@@ -28,6 +28,75 @@
 #include "web_server.h"
 #include "WebSocketServer.h"  // libhv
 
+bool is_root() {
+  // Root always has an Effective User ID (EUID) of 0
+  return geteuid() == 0;
+}
+
+bool change_privileges(int user_id) {
+  std::cout << " ...Trying change privileges (setgid)" << std::endl;
+  if (setgid(user_id) != 0) {
+    std::cerr << " -> FAIL. Failed to set GID" << std::endl;
+    return false;
+  }
+  std::cout << " ...Trying change privileges (setuid)" << std::endl;
+  if (setuid(user_id) != 0) {
+    std::cerr << " -> FAIL. Failed to set UID" << std::endl;
+    return false;
+  }
+  std::cout << " ...Trying change privileges (verify)" << std::endl;
+  if (setuid(0) == 0) {
+    std::cerr << " -> FAIL. Security Risk: Privileges were not permanently dropped!" << std::endl;
+    return false;
+  }
+  std::cout << " ...Trying change privileges (test)" << std::endl;
+  if (getuid() == user_id) {
+    std::cout << "-> OK. Successful changed privileges." << std::endl;
+  } else {
+    std::cerr << " -> FAIL. NOT CHANGED." << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool try_apply_mldl_user(const std::string &work_dir) {
+  // std::cout << "work_dir = " << work_dir << std::endl;
+  std::string str_user;
+  int user_id = 0;
+  if (WsjcppCore::getEnv("MLDL_USER", str_user)) {
+    std::cout << "MLDL_USER='" << str_user << "'" << std::endl;
+    try {
+      user_id = std::stoi(str_user);
+    } catch (const std::invalid_argument& e) {
+      std::cerr << "Error: No conversion could be performed. MLDL_USER='" << str_user << "'" << std::endl;
+      return false;
+    } catch (const std::out_of_range& e) {
+      std::cerr << "The converted value is too big for an int.. MLDL_USER='" << str_user << "'" << std::endl;
+      return false;
+    } catch (...) {
+      std::cerr << "The converted value is too big for an int.. MLDL_USER='" << str_user << "'" << std::endl;
+      return false;
+    }
+    if (is_root()) {
+      std::cout << " ...Try change owner for '" << work_dir << "' to '" << str_user << ":" << str_user << "'" << std::endl;
+      std::string cmd = "chown -R " + std::to_string(user_id) + ":" + std::to_string(user_id) + " \"" + work_dir + "\"";
+      if (system(cmd.c_str()) == 0) {
+        std::cout << " -> OK. Successful changed owner for data." << std::endl;
+      } else {
+        std::cerr << " -> FAIL. Could not change owner for directory." << std::endl;
+        return false;
+      }
+      return change_privileges(user_id);
+    } else if (geteuid() == user_id) {
+      std::cout << " * OK. MLDL_USER is equal with current user" << std::endl;
+    } else {
+      return change_privileges(user_id);
+    }
+    return true;
+  }
+  return true;
+}
+
 int main(int argc, const char* argv[]) {
     std::string TAG = "MAIN";
     std::string appName = std::string(WSJCPP_APP_NAME);
@@ -45,8 +114,8 @@ int main(int argc, const char* argv[]) {
         "./data",
         "/root/data/"
     };
-    WsjcppEmployeesInit empls({}, false);
-    if (!empls.inited) {
+    WsjcppEmployeesInit employees({}, false);
+    if (!employees.inited) {
         return -1;
     }
 
@@ -61,6 +130,7 @@ int main(int argc, const char* argv[]) {
         if (WsjcppCore::fileExists(sWorkDir + "/config.yml")) {
             std::cout << "Automatically detected workdir: " << sWorkDir << std::endl;
             pConfig->setDataDir(sWorkDir);
+            try_apply_mldl_user(sWorkDir);
             break;
         }
     }
