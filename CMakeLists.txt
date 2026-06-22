@@ -27,7 +27,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-project(cpp-basic-web-server)
+project(my-little-dev-lab)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/src.wsjcpp/CMakeLists.txt)
 
@@ -35,7 +35,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/src.wsjcpp/CMakeLists.txt)
 #### END_WSJCPP_APPEND
 
 set(CMAKE_CXX_STANDARD 17)
-set(EXECUTABLE_OUTPUT_PATH ${cpp-basic-web-server_SOURCE_DIR})
+set(EXECUTABLE_OUTPUT_PATH ${my-little-dev-lab_SOURCE_DIR})
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # Sources
@@ -46,16 +46,6 @@ list (APPEND WSJCPP_INCLUDE_DIRS "src/argument_processors")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/employees")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/api_handlers")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/3rdparty/sqlite3/src")
-
-# argument processors
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_check.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_clean.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_cpp-basic-web-server_main.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_services.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_start.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_teams.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_version.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_web_test.cpp")
 
 # employees
 list (APPEND WSJCPP_SOURCES "./src/employees/employ_config.cpp")
@@ -111,15 +101,15 @@ list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src/3rdparty/sqlite3/src
 
 include_directories(${WSJCPP_INCLUDE_DIRS})
 
-add_executable (cpp-basic-web-server ${WSJCPP_SOURCES})
+add_executable (my-little-dev-lab ${WSJCPP_SOURCES})
 
-target_link_libraries(cpp-basic-web-server -lpthread ${WSJCPP_LIBRARIES} )
+target_link_libraries(my-little-dev-lab -lpthread ${WSJCPP_LIBRARIES} )
 
 install(
-    TARGETS
-        cpp-basic-web-server
-    RUNTIME DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/bin
+  TARGETS
+    my-little-dev-lab
+  RUNTIME DESTINATION
+    ${CMAKE_INSTALL_PREFIX}/bin
 )
 
 # enable testing functionality

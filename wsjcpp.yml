@@ -1,4 +1,4 @@
-name: "cpp-basic-web-server"
+name: "my-little-dev-lab"
 version: v0.0.1
 cmake_minimum_required: "3.18"
 cmake_cxx_standard: "17"
@@ -66,14 +66,16 @@ dependencies:
     installation-datetime: "Fri, 02 Jan 2026 05:49:19 GMT"
 
 resources:
-  - filepath: "./data/html/index.html"
-    filesize: 57
-    pack-as: "binary"
-    modified: 1753766028
-    sha1: "d6d85ef41e79e9073554dad11d1c0b13b61d4ad1"
-  - filepath: "./data/html/admin/index.html"
-    filesize: 50
-    pack-as: "binary"
-    modified: 1756568798
-    sha1: "2d7ccf5b7e617474286297b9df2c270e718f7db1"
+  output-generation-dir: src/wsjcpp_resources
+  files:
+    - filepath: "./data/html/index.html"
+      size: 2878
+      pack-as: "binary"
+      modified: 1782135159
+      sha1: "7e467ae0072aeddc1217a033584b5f7210d1d73c"
+    - filepath: "./data/html/admin/index.html"
+      size: 50
+      pack-as: "binary"
+      modified: 1782134917
+      sha1: "2d7ccf5b7e617474286297b9df2c270e718f7db1"
 
